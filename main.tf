@@ -1,39 +1,19 @@
-provider "aws" {
-  access_key = var.aws_access_key
-  secret_key = var.aws_secret_key
-  region     = "us-west-2"
-}
-
-resource "aws_key_pair" "deployer" {
-  key_name   = var.key_name
-  public_key = var.public_key
-}
-
-data "aws_ami" "ubuntu" {
-  most_recent = true
-
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
+terraform {
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.27"
+    }
   }
-
-  owners = ["099720109477"]
 }
 
 resource "aws_instance" "app_server" {
   count         = var.instance_count
-  ami           = data.aws_ami.ubuntu.id
+  ami           = "ami-830c94e3"
   instance_type = "t2.micro"
-  key_name      = aws_key_pair.deployer.key_name
 
-  provisioner "remote-exec" {
-    inline = [
-      "sudo snap install rocketchat-server",
-      "sudo rocketchat-server.initcaddy",
-    ]
+
+  tags = {
+    Name = "RocketChatServer"
   }
-  
-    tags = {
-      Name = "RocketChatServer"
-    }
-  }
+}
